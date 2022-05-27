@@ -1,43 +1,60 @@
-import React, { useState } from "react";
-import "./addcardetails.scss"
+import React, { useEffect, useState } from "react";
+import "./addcardetails.scss";
+import { Row, Col } from "react-bootstrap";
 import axios from "axios";
+import Getcar from "./Getcar";
 
 function Addcardetails() {
+  const [category, setcategory] = useState("");
+  const [name, setName] = useState("");
+  const [car, setcar] = useState("");
+  const [transmission, setTransmission] = useState("");
+  const [suspension, setsuspension] = useState("");
+  const [wheeltype, setwheeltype] = useState("");
+  const [headlighttype, setheadlighttype] = useState("");
+  const [view, setView] = useState([]);
 
-   const [category,setcategory] =useState("")
-   const [name ,setName] =useState("")
-   const [car ,setcar] =useState("")
-   const [transmission, setTransmission] = useState("");
-   const [suspension,setsuspension] = useState("");
-   const [wheeltype ,setwheeltype] = useState("");
-   const [headlighttype,setheadlighttype]=useState("")
+  const handlesubmit = () => {
+    //  console.log("category", category , "name", name , "car" ,car ,"transmission",transmission,
+    //   "suspension",suspension, "wheelType",wheeltype , "headlighttType",headlighttype )
+    postData();
+  };
 
-const handlesubmit = ()=>{
- console.log("category",category,  "name", name , "car" ,car ,"transmission",transmission,
-  "suspension","wheelType",wheeltype , "headlightType",headlighttype )
-  postData();
-};
+  const postData = async () => {
+    axios
+      .post("https://mobiledev.refogen.com/api/v1/cars/createCars ", {
+        category_id: parseInt(category),
+        car_name: name,
+        car_hp: parseInt(car),
+        car_transmission: transmission,
+        car_suspension: suspension,
+        car_wheelType: wheeltype,
+        car_headlightType: headlighttype,
+      })
+      .then((res) => {
+        console.log(res.data.success);
+        fetchcardetails()
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
-const postData = async () => {
-  axios
-    .post("https://mobiledev.refogen.com/api/v1/cars/createCars ",  {
-      //   category_id: categoryid,
-      category_id: category,
-      car_name: name,
-      car_hp: car,
-      car_transmission: transmission,
-      car_suspension: suspension,
-      car_wheelType: wheeltype,
-      car_headlightType: headlighttype,
-    })
-    .then((res) => {
-      console.log(res.data);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-};
+  const fetchcardetails = () => {
+    axios
+      .get("https://mobiledev.refogen.com/api/v1/cars/getAllCars")
+      .then((res) => {
+        console.log(res.data);
+        setView(res.data.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
+  useEffect(() => {
+    fetchcardetails();
+  }, []);
 
   return (
     <>
@@ -61,15 +78,15 @@ const postData = async () => {
                     <select
                       class="form-select"
                       aria-label="Default select example"
-                      defaultvalue={category}
-                      onChange={(event) =>
-                        console.log(setcategory(event.target.value))
-                      }
+                      // value={category}
+                      onChange={(event) => {
+                        setcategory(event.target.value);
+                      }}
                     >
                       <option selected>Category</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
+                      <option value={1}>Minicompact</option>
+                      <option value={2}>Subcompact</option>
+                      <option value={3}>Compact</option>
                     </select>
                   </div>
                 </div>
@@ -186,6 +203,17 @@ const postData = async () => {
           </div>
         </div>
       </div>
+
+      <Row>
+        {view
+          ? view.map((item) => (
+              // <p>{item.car_name}</p>
+              <Col>
+                <Getcar handlecallback={fetchcardetails} item={item} />
+              </Col>
+            ))
+          : "error"}
+      </Row>
     </>
   );
 }
